@@ -74,6 +74,7 @@ while getopts ":ht:w" arg; do
       ;;
     w)
       export WORK=1
+      ;;
     h | *) # display help
       usage
       exit 0
