@@ -67,11 +67,13 @@ usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
 
 ## Command line options
 # setup: run a full machine and developer setup
-while getopts ":ht" arg; do
+while getopts ":ht:w" arg; do
   case ${arg} in
     t) 
       [[ ${OPTARG} = "setup" ]] && export SETUP=1
       ;;
+    w)
+      export WORK=1
     h | *) # display help
       usage
       exit 0
