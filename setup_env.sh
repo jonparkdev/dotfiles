@@ -85,8 +85,161 @@ done
 
 if [[ ${LINUX} ]]; then
   LINUX_TYPE=$(awk -F= '/^NAME/{print $2}' /etc/os-release | tr -d '"')
-  echo "${LINUX_TYPE}"
+  [[ ${LINUX_TYPE} = "Ubuntu" ]] && export UBUNTU=1
 fi
 
+if [[ ${UBUNTU} ]]; then
+  UBUNTU_VERSION=$(lsb_release -rs)
+  [[ ${UBUNTU_VERSION} = "18.04" ]] && export BIONIC=1
+  [[ ${UBUNTU_VERSION} = "20.04" ]] && export FOCAL=1
+  [[ ${UBUNTU_VERSION} = "22.04" ]] && export JAMMY=1
+  [[ ${UBUNTU_VERSION} = "6" ]] && export FOCAL=1 # elementary os
+fi
+
+[[ $(hostname -s) = "workstation" ]] && export WORKSTATION=1
+
+if [[ ${LINUX} ]]; then
+  if [[ -f ${HOME}/.local/bin/virtualenv ]]; then
+    VIRTUALENV_LOC="${HOME}/.local/bin"
+  elif [[ -f "/usr/local/bin/virtualenv" ]]; then
+    VIRTUALENV_LOC="/usr/local/bin"
+  fi
+  VIRTUALENVWRAPPER_PYTHON="/usr/bin/python3"
+fi
+
+if [[ ${SETUP} ]]; then
+  # if [[ ${MACOS} ]]; then
+  #   echo "Installing Rosetta if necessary"
+  #   install_rosetta
+  # fi
+
+  if ! [[ -d ${HOME}/software_downloads ]]; then
+    mkdir ${HOME}/software_downloads
+  fi
+
+   if [[ ${MACOS} || ${LINUX} ]]; then
+    if ! [ -x "$(command -v brew)" ]; then
+      echo "Installing homebrew..."
+      # if [[ ${MACOS} ]]; then
+      #   xcode-select --install
+      #   # Accept Xcode license
+      #   sudo xcodebuild -license accept
+      # fi
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+  fi
+
+  echo "Installing git"
+  if [[ ${MACOS} ]]; then
+    brew install git
+  fi
+
+  if [[ ${UBUNTU} ]]; then
+    sudo -H add-apt-repository ppa:git-core/ppa -y
+    sudo -H apt update
+    sudo -H apt dist-upgrade -y
+    sudo -H apt install git -y
+  fi
+
+  echo "Installing zsh"
+  # if [[ ${MACOS} ]]; then
+  #   if ! [ -x "$(command -v brew)" ]; then
+  #     echo "Installing homebrew..."
+  #     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  #   fi
+  #   brew install zsh
+  # fi
+  if [[ ${UBUNTU} ]]; then
+    sudo -H apt update
+    sudo -H apt install zsh -y
+    sudo -H apt install zsh-doc -y
+  fi
+
+  echo "Creating home bin"
+  if [[ ! -d ${HOME}/bin ]]; then
+    mkdir ${HOME}/bin
+  fi
+
+  echo "Creating ${PERSONAL_GITREPOS}"
+  if [[ ! -d ${PERSONAL_GITREPOS} ]]; then
+    mkdir ${PERSONAL_GITREPOS}
+  fi
+
+  echo "Copying ${DOTFILES} from Github"
+  if [[ ! -d ${PERSONAL_GITREPOS}/${DOTFILES} ]]; then
+    cd ${HOME} || return
+    # git clone --recursive git@github.com:jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
+    # for regular https github used on machines that will not push changes
+    git clone --recursive https://github.com/jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
+  else
+    cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
+    git pull
+  fi
+
+  echo "Linking ${DOTFILES} to their home"
+
+  # if [[ ${ MACOS } ]]; then
+  #   if [[ -f ${HOME}/.gitconfig ]]; then
+  #     rm ${HOME}/.gitconfig
+  #     ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
+  #   elif [[ ! -L ${HOME}/.gitconfig ]]; then
+  #     ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
+  #   fi
+  # fi
+  if [[ ${LINUX} ]]; then
+    if [[ -f ${HOME}/.gitconfig ]]; then
+      rm ${HOME}/.gitconfig
+      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
+    elif [[ ! -L ${HOME}/.gitconfig ]]; then
+      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
+    fi
+  fi
+
+  if [[ ${MACOS} || ${LINUX} ]]; then
+    if [[ ! -d ${HOME}/.config ]]; then
+      mkdir -p ${HOME}/.config
+    fi
+  fi
+fi
+
+# full setup and installation of all packages for a development environment
+if [[ ${SETUP} || ${DEVELOPER} ]]; then
+  sudo -H apt update
+  if [[ ${FOCAL} ]]; then
+    sudo -H apt install --install-recommends linux-generic-hwe-20.04 -y
+  elif [[ ${JAMMY} ]]; then
+    sudo -H apt install --install-recommends linux-generic-hwe-22.04 -y
+  fi
+  xargs -a ./ubuntu_common_packages.txt sudo apt install -y
+  if [[ ${FOCAL} ]]; then
+    xargs -a ./ubuntu_2004_packages.txt sudo apt install -y
+  elif [[ ${JAMMY} ]]; then
+    xargs -a ./ubuntu_2204_packages.txt sudo apt install -y
+  fi
+
+  if [[ ${WORKSTATION} ]]; then
+    # apt package installation
+    xargs -a ./ubuntu_workstation_packages.txt sudo apt install -y
+
+    # snap package installation
+    xargs -a ./ubuntu_workstation_snap_packages.txt sudo snap install
+  fi
+
+  echo "Installing pyenv"
+  curl https://pyenv.run | bash
+
+  if [[ ! ${WORKSTATION} ]]; then
+    echo "Installing docker desktop"
+    curl -fsSL http://download.docker.com/linux/ubuntu/gpg | sudo -H apt-key add -
+    sudo -H add-apt-repository \
+    "deb [arch=amd64] http://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) \
+    stable"
+    sudo -H apt update
+    sudo -H apt install docker-ce -y
+    sudo -H apt install docker-ce-cli -y
+    sudo -H apt install containerd.io -y
+  fi
+fi
 
 exit 0
