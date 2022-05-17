@@ -99,7 +99,8 @@ if [[ ${UBUNTU} ]]; then
   [[ ${UBUNTU_VERSION} = "6" ]] && export FOCAL=1 # elementary os
 fi
 
-[[ $(hostname -s) = "workstation" ]] && export WORKSTATION=1
+## Identifiers for different kinds of machines
+# [[ $(hostname -s) = "workstation" ]] && export WORKSTATION=1
 
 if [[ ${LINUX} ]]; then
   if [[ -f ${HOME}/.local/bin/virtualenv ]]; then
@@ -110,6 +111,8 @@ if [[ ${LINUX} ]]; then
   VIRTUALENVWRAPPER_PYTHON="/usr/bin/python3"
 fi
 
+
+# Full machine and developer setup 
 if [[ ${SETUP} ]]; then
   # if [[ ${MACOS} ]]; then
   #   echo "Installing Rosetta if necessary"
@@ -120,7 +123,7 @@ if [[ ${SETUP} ]]; then
     mkdir ${HOME}/software_downloads
   fi
 
-   if [[ ${MACOS} || ${LINUX} ]]; then
+  if [[ ${MACOS} || ${LINUX} ]]; then
     if ! [ -x "$(command -v brew)" ]; then
       echo "Installing homebrew..."
       # if [[ ${MACOS} ]]; then
@@ -158,6 +161,16 @@ if [[ ${SETUP} ]]; then
     sudo -H apt install zsh-doc -y
   fi
 
+  echo "Installing Oh My ZSH..."
+  if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
+    sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+  fi
+
+  echo "Setting ZSH as shell..."
+  if [[ ! ${SHELL} = "/bin/zsh" ]]; then
+    chsh -s /bin/zsh
+  fi
+
   echo "Creating home bin"
   if [[ ! -d ${HOME}/bin ]]; then
     mkdir ${HOME}/bin
@@ -180,7 +193,6 @@ if [[ ${SETUP} ]]; then
   fi
 
   echo "Linking ${DOTFILES} to their home"
-
   # if [[ ${ MACOS } ]]; then
   #   if [[ -f ${HOME}/.gitconfig ]]; then
   #     rm ${HOME}/.gitconfig
@@ -214,35 +226,31 @@ if [[ ${SETUP} || ${DEVELOPER} ]]; then
     sudo -H apt install --install-recommends linux-generic-hwe-22.04 -y
   fi
   xargs -a ./ubuntu_common_packages.txt sudo apt install -y
-  if [[ ${FOCAL} ]]; then
-    xargs -a ./ubuntu_2004_packages.txt sudo apt install -y
   elif [[ ${JAMMY} ]]; then
     xargs -a ./ubuntu_2204_packages.txt sudo apt install -y
   fi
 
-  if [[ ${WORKSTATION} ]]; then
-    # apt package installation
-    xargs -a ./ubuntu_workstation_packages.txt sudo apt install -y
-
-    # snap package installation
-    xargs -a ./ubuntu_workstation_snap_packages.txt sudo snap install
-  fi
+  echo "Install nvm for node environments"
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 
   echo "Installing pyenv"
   curl https://pyenv.run | bash
 
-  if [[ ! ${WORKSTATION} ]]; then
-    echo "Installing docker desktop"
-    curl -fsSL http://download.docker.com/linux/ubuntu/gpg | sudo -H apt-key add -
-    sudo -H add-apt-repository \
-    "deb [arch=amd64] http://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) \
-    stable"
-    sudo -H apt update
-    sudo -H apt install docker-ce -y
-    sudo -H apt install docker-ce-cli -y
-    sudo -H apt install containerd.io -y
-  fi
+  echo "Installing docker desktop"
+  curl -fsSL http://download.docker.com/linux/ubuntu/gpg | sudo -H apt-key add -
+  sudo -H add-apt-repository \
+  "deb [arch=amd64] http://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) \
+  stable"
+  sudo -H apt update
+  sudo -H apt install docker-ce -y
+  sudo -H apt install docker-ce-cli -y
+  sudo -H apt install containerd.io -y
+  # So we don't have to run as sudo
+  sudo -H groupadd docker
+  sudo usermod -aG docker ${USER}
+  newgrp docker 
+
 fi
 
 exit 0
