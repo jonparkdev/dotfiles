@@ -161,11 +161,6 @@ if [[ ${SETUP} ]]; then
     sudo -H apt install zsh-doc -y
   fi
 
-  echo "Installing Oh My ZSH..."
-  if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
-    sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-  fi
-
   echo "Setting ZSH as shell..."
   if [[ ! ${SHELL} = "/bin/zsh" ]]; then
     chsh -s /bin/zsh
@@ -210,6 +205,14 @@ if [[ ${SETUP} ]]; then
     fi
   fi
 
+  if [[ -f ${HOME}/.zshrc ]]; then
+    rm ${HOME}/.zshrc
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
+  elif [[ ! -L ${HOME}/.zshrc ]]; then
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
+  fi
+
+
   if [[ ${MACOS} || ${LINUX} ]]; then
     if [[ ! -d ${HOME}/.config ]]; then
       mkdir -p ${HOME}/.config
@@ -217,6 +220,12 @@ if [[ ${SETUP} ]]; then
   fi
 fi
 
+echo "Installing Oh My ZSH..."
+if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
+  sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+fi
+
+##
 # full setup and installation of all packages for a development environment
 if [[ ${SETUP} || ${DEVELOPER} ]]; then
   sudo -H apt update
@@ -230,8 +239,14 @@ if [[ ${SETUP} || ${DEVELOPER} ]]; then
     xargs -a ./ubuntu_2204_packages.txt sudo apt install -y
   fi
 
-  echo "Install nvm for node environments"
+  echo "Install nvm for node environments and set default to lts"
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+  nvm install lts/*
+  nvm alias default lts/*
+
+  echo "Install yarn"
+  npm install --global yarn
+  sudo npm install -g yarn
 
   echo "Installing pyenv"
   curl https://pyenv.run | bash
