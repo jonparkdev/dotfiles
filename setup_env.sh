@@ -226,7 +226,7 @@ if [[ ${SETUP} || ${DEVELOPER} ]]; then
     sudo -H apt install --install-recommends linux-generic-hwe-22.04 -y
   fi
   xargs -a ./ubuntu_common_packages.txt sudo apt install -y
-  elif [[ ${JAMMY} ]]; then
+  if [[ ${JAMMY} ]]; then
     xargs -a ./ubuntu_2204_packages.txt sudo apt install -y
   fi
 
