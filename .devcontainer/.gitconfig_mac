@@ -1,0 +1,7 @@
+[core]
+        excludesfile = /Users/jon/.gitignore_global
+[user]
+        name = Jon Park
+        email = jon@jonathanpark.ca
+[pull]
+       rebase = false

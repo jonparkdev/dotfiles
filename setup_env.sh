@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 
-# software versions to be installed
-GIT_VER="2.36.0"
-GIT_URL="https://mirrors.edge.kernel.org/pub/software/scm/git"
-ZSH_VER="5.8"
-TERRAFORM_VER="1.0.2"
-DOCKER_COMPOSE_VER="2.3.3"
-DOCKER_COMPOSE_URL="https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VER}/docker-compose-$(uname -s)-$(uname -m)"
-
-# directory locations
+# Directory locations
 GITREPOS="${HOME}/git-repos"
 PERSONAL_GITREPOS="${GITREPOS}/personal"
 DOTFILES="dotfiles"
@@ -62,18 +54,16 @@ install_rosetta() {
   fi
 }
 
+# function be called if incorrect use of STDIN
 usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
 [[ $# -eq 0 ]] && usage
 
-## Command line options
+# Command line options
 # setup: run a full machine and developer setup
 while getopts ":ht:w" arg; do
   case ${arg} in
     t) 
       [[ ${OPTARG} = "setup" ]] && export SETUP=1
-      ;;
-    w)
-      export WORK=1
       ;;
     h | *) # display help
       usage
@@ -99,9 +89,7 @@ if [[ ${UBUNTU} ]]; then
   [[ ${UBUNTU_VERSION} = "6" ]] && export FOCAL=1 # elementary os
 fi
 
-## Identifiers for different kinds of machines
-# [[ $(hostname -s) = "workstation" ]] && export WORKSTATION=1
-
+# Set virtualenv path to variable
 if [[ ${LINUX} ]]; then
   if [[ -f ${HOME}/.local/bin/virtualenv ]]; then
     VIRTUALENV_LOC="${HOME}/.local/bin"
@@ -111,134 +99,137 @@ if [[ ${LINUX} ]]; then
   VIRTUALENVWRAPPER_PYTHON="/usr/bin/python3"
 fi
 
+# Install Rosetta for new M1 silicone
+if [[ ${MACOS} ]]; then
+  echo "Installing Rosetta if necessary"
+  install_rosetta
+fi
 
-# Full machine and developer setup 
-if [[ ${SETUP} ]]; then
-  # if [[ ${MACOS} ]]; then
-  #   echo "Installing Rosetta if necessary"
-  #   install_rosetta
-  # fi
+# TODO: Find out what this is for 
+if ! [[ -d ${HOME}/software_downloads ]]; then
+  mkdir ${HOME}/software_downloads
+fi
 
-  if ! [[ -d ${HOME}/software_downloads ]]; then
-    mkdir ${HOME}/software_downloads
+## Begin setup for base system
+
+if [[ ${UBUNTU} ]]; then
+  if [[ ${FOCAL} ]]; then
+    sudo -H apt install --install-recommends linux-generic-hwe-20.04 -y
+  elif [[ ${JAMMY} ]]; then
+    sudo -H apt install --install-recommends linux-generic-hwe-22.04 -y
   fi
 
-  if [[ ${MACOS} || ${LINUX} ]]; then
-    if ! [ -x "$(command -v brew)" ]; then
-      echo "Installing homebrew..."
-      # if [[ ${MACOS} ]]; then
-      #   xcode-select --install
-      #   # Accept Xcode license
-      #   sudo xcodebuild -license accept
-      # fi
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  xargs -a ./ubuntu_common_packages.txt sudo apt install -y
+fi
+
+# Install homebrew for Linux and Mac
+if [[ ${MACOS} || ${LINUX} ]]; then
+  if ! [ -x "$(command -v brew)" ]; then
+    echo "Installing homebrew..."
+    if [[ ${MACOS} ]]; then
+      xcode-select --install
+      # Accept Xcode license
+      sudo xcodebuild -license accept
     fi
-  fi
-
-  echo "Installing git"
-  if [[ ${MACOS} ]]; then
-    brew install git
-  fi
-
-  if [[ ${UBUNTU} ]]; then
-    sudo -H add-apt-repository ppa:git-core/ppa -y
-    sudo -H apt update
-    sudo -H apt dist-upgrade -y
-    sudo -H apt install git -y
-  fi
-
-  echo "Installing zsh"
-  # if [[ ${MACOS} ]]; then
-  #   if ! [ -x "$(command -v brew)" ]; then
-  #     echo "Installing homebrew..."
-  #     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-  #   fi
-  #   brew install zsh
-  # fi
-  if [[ ${UBUNTU} ]]; then
-    sudo -H apt update
-    sudo -H apt install zsh -y
-    sudo -H apt install zsh-doc -y
-  fi
-
-  echo "Setting ZSH as shell..."
-  if [[ ! ${SHELL} = "/bin/zsh" ]]; then
-    chsh -s /bin/zsh
-  fi
-
-  echo "Creating home bin"
-  if [[ ! -d ${HOME}/bin ]]; then
-    mkdir ${HOME}/bin
-  fi
-
-  echo "Creating ${PERSONAL_GITREPOS}"
-  if [[ ! -d ${PERSONAL_GITREPOS} ]]; then
-    mkdir ${PERSONAL_GITREPOS}
-  fi
-
-  echo "Copying ${DOTFILES} from Github"
-  if [[ ! -d ${PERSONAL_GITREPOS}/${DOTFILES} ]]; then
-    cd ${HOME} || return
-    # git clone --recursive git@github.com:jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
-    # for regular https github used on machines that will not push changes
-    git clone --recursive https://github.com/jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
-  else
-    cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
-    git pull
-  fi
-
-  echo "Linking ${DOTFILES} to their home"
-  # if [[ ${ MACOS } ]]; then
-  #   if [[ -f ${HOME}/.gitconfig ]]; then
-  #     rm ${HOME}/.gitconfig
-  #     ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
-  #   elif [[ ! -L ${HOME}/.gitconfig ]]; then
-  #     ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
-  #   fi
-  # fi
-  if [[ ${LINUX} ]]; then
-    if [[ -f ${HOME}/.gitconfig ]]; then
-      rm ${HOME}/.gitconfig
-      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
-    elif [[ ! -L ${HOME}/.gitconfig ]]; then
-      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
-    fi
-  fi
-
-  if [[ -f ${HOME}/.zshrc ]]; then
-    rm ${HOME}/.zshrc
-    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
-  elif [[ ! -L ${HOME}/.zshrc ]]; then
-    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
-  fi
-
-
-  if [[ ${MACOS} || ${LINUX} ]]; then
-    if [[ ! -d ${HOME}/.config ]]; then
-      mkdir -p ${HOME}/.config
-    fi
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
 fi
+
+echo "Installing git"
+if [[ ${MACOS} ]]; then
+  brew install git
+fi
+
+if [[ ${UBUNTU} ]]; then
+  sudo -H add-apt-repository ppa:git-core/ppa -y
+  sudo -H apt update
+  sudo -H apt dist-upgrade -y
+  sudo -H apt install git -y
+fi
+
+echo "Installing zsh"
+if [[ ${MACOS} ]]; then
+  if ! [ -x "$(command -v brew)" ]; then
+    echo "Installing homebrew..."
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  fi
+  brew install zsh
+fi
+
+if [[ ${UBUNTU} ]]; then
+  sudo -H apt update
+  sudo -H apt install zsh -y
+  sudo -H apt install zsh-doc -y
+fi
+
+echo "Setting ZSH as shell..."
+if [[ ! ${SHELL} = "/bin/zsh" ]]; then
+  chsh -s /bin/zsh
+fi
+
+# Configure system directories and link dotfiles
+echo "Creating home bin"
+if [[ ! -d ${HOME}/bin ]]; then
+  mkdir ${HOME}/bin
+fi
+
+echo "Creating ${PERSONAL_GITREPOS}"
+if [[ ! -d ${PERSONAL_GITREPOS} ]]; then
+  mkdir ${PERSONAL_GITREPOS}
+fi
+
+echo "Copying ${DOTFILES} from Github"
+if [[ ! -d ${PERSONAL_GITREPOS}/${DOTFILES} ]]; then
+  cd ${HOME} || return
+  # git clone --recursive git@github.com:jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
+  # for regular https github used on machines that will not push changes
+  git clone --recursive https://github.com/jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
+else
+  cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
+  git pull
+fi
+
+echo "Linking ${DOTFILES} to their home"
+if [[ ${ MACOS } ]]; then
+  if [[ -f ${HOME}/.gitconfig ]]; then
+    rm ${HOME}/.gitconfig
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
+  elif [[ ! -L ${HOME}/.gitconfig ]]; then
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
+  fi
+fi
+
+if [[ ${LINUX} ]]; then
+  if [[ -f ${HOME}/.gitconfig ]]; then
+    rm ${HOME}/.gitconfig
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
+  elif [[ ! -L ${HOME}/.gitconfig ]]; then
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
+  fi
+fi
+
+if [[ -f ${HOME}/.zshrc ]]; then
+  rm ${HOME}/.zshrc
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
+elif [[ ! -L ${HOME}/.zshrc ]]; then
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
+fi
+
+if [[ ${MACOS} || ${LINUX} ]]; then
+  if [[ ! -d ${HOME}/.config ]]; then
+    mkdir -p ${HOME}/.config
+  fi
+fi
+
+
+## Install developer packages necessary for development
 
 echo "Installing Oh My ZSH..."
 if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
   sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 fi
 
-##
-# full setup and installation of all packages for a development environment
-if [[ ${SETUP} || ${DEVELOPER} ]]; then
-  sudo -H apt update
-  if [[ ${FOCAL} ]]; then
-    sudo -H apt install --install-recommends linux-generic-hwe-20.04 -y
-  elif [[ ${JAMMY} ]]; then
-    sudo -H apt install --install-recommends linux-generic-hwe-22.04 -y
-  fi
-  xargs -a ./ubuntu_common_packages.txt sudo apt install -y
-  if [[ ${JAMMY} ]]; then
-    xargs -a ./ubuntu_2204_packages.txt sudo apt install -y
-  fi
-
+if [[ ${UBUNTU} ]]; then
   echo "Install nvm for node environments and set default to lts"
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
   nvm install lts/*
