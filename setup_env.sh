@@ -111,7 +111,6 @@ if ! [[ -d ${HOME}/software_downloads ]]; then
 fi
 
 ## Begin setup for base system
-
 if [[ ${UBUNTU} ]]; then
   if [[ ${FOCAL} ]]; then
     sudo -H apt install --install-recommends linux-generic-hwe-20.04 -y
@@ -160,6 +159,11 @@ if [[ ${UBUNTU} ]]; then
   sudo -H apt update
   sudo -H apt install zsh -y
   sudo -H apt install zsh-doc -y
+fi
+
+echo "Installing Oh My ZSH..."
+if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
+  sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 fi
 
 echo "Setting ZSH as shell..."
@@ -221,27 +225,20 @@ if [[ ${MACOS} || ${LINUX} ]]; then
   fi
 fi
 
+## Install packages necessary for development
+echo "Install nvm for node environments and set default to lts"
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+nvm install lts/*
+nvm alias default lts/*
 
-## Install developer packages necessary for development
+echo "Install yarn"
+npm install --global yarn
+sudo npm install -g yarn
 
-echo "Installing Oh My ZSH..."
-if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
-  sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-fi
+echo "Installing pyenv"
+curl https://pyenv.run | bash
 
 if [[ ${UBUNTU} ]]; then
-  echo "Install nvm for node environments and set default to lts"
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-  nvm install lts/*
-  nvm alias default lts/*
-
-  echo "Install yarn"
-  npm install --global yarn
-  sudo npm install -g yarn
-
-  echo "Installing pyenv"
-  curl https://pyenv.run | bash
-
   echo "Installing docker desktop"
   curl -fsSL http://download.docker.com/linux/ubuntu/gpg | sudo -H apt-key add -
   sudo -H add-apt-repository \
@@ -256,7 +253,6 @@ if [[ ${UBUNTU} ]]; then
   sudo -H groupadd docker
   sudo usermod -aG docker ${USER}
   newgrp docker 
-
 fi
 
 exit 0
