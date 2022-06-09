@@ -161,14 +161,14 @@ if [[ ${UBUNTU} ]]; then
   sudo -H apt install zsh-doc -y
 fi
 
-echo "Installing Oh My ZSH..."
-if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
-  sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-fi
-
 echo "Setting ZSH as shell..."
 if [[ ! ${SHELL} = "/bin/zsh" ]]; then
   chsh -s /bin/zsh
+fi
+
+echo "Installing Oh My ZSH..."
+if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
+  sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 fi
 
 # Configure system directories and link dotfiles
