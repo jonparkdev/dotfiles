@@ -110,7 +110,9 @@ if ! [[ -d ${HOME}/software_downloads ]]; then
   mkdir ${HOME}/software_downloads
 fi
 
-## Begin setup for base system
+### 
+# Begin setup of base system
+###
 if [[ ${UBUNTU} ]]; then
   if [[ ${FOCAL} ]]; then
     sudo -H apt install --install-recommends linux-generic-hwe-20.04 -y
@@ -225,9 +227,12 @@ if [[ ${MACOS} || ${LINUX} ]]; then
   fi
 fi
 
-## Install packages necessary for development
+###
+# Install packages necessary for development
+###
 echo "Install nvm for node environments and set default to lts"
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+source .zshrc
 nvm install lts/*
 nvm alias default lts/*
 
