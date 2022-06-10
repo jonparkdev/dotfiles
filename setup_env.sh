@@ -64,6 +64,7 @@ while getopts ":ht:w" arg; do
   case ${arg} in
     t) 
       [[ ${OPTARG} = "setup" ]] && export SETUP=1
+      [[ ${OPTARG} = "update" ]] && export UPDATE=1
       ;;
     h | *) # display help
       usage
@@ -240,10 +241,12 @@ echo "Install yarn"
 npm install --global yarn
 sudo npm install -g yarn
 
-echo "Installing pyenv"
-curl https://pyenv.run | bash
-
 if [[ ${UBUNTU} ]]; then
+  sudo -H apt update
+
+  echo "Installing pyenv"
+  curl https://pyenv.run | bash
+
   echo "Installing docker desktop"
   curl -fsSL http://download.docker.com/linux/ubuntu/gpg | sudo -H apt-key add -
   sudo -H add-apt-repository \
@@ -258,6 +261,120 @@ if [[ ${UBUNTU} ]]; then
   sudo -H groupadd docker
   sudo usermod -aG docker ${USER}
   newgrp docker 
+
+
+  echo "Installing docker-compose Ubuntu"
+  if [[ ! -f ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} ]]; then
+    wget -O ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} ${DOCKER_COMPOSE_URL}
+    sudo cp -a ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} /usr/local/bin/
+    sudo mv /usr/local/bin/docker-compose_${DOCKER_COMPOSE_VER} /usr/local/bin/docker-compose
+    sudo chmod 755 /usr/local/bin/docker-compose
+    sudo chown root:root /usr/local/bin/docker-compose
+  fi
+
+  sudo -H apt autoremove -y
+fi
+
+if [[ ${MACOS} ]]; then
+  echo "Creating $BREWFILE_LOC"
+  if [[ ! -d ${BREWFILE_LOC} ]]; then
+    mkdir ${BREWFILE_LOC}
+  fi
+
+  if [[ ! -L ${BREWFILE_LOC}/Brewfile ]]; then
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/Brewfile $BREWFILE_LOC/Brewfile
+  else
+    rm $BREWFILE_LOC/Brewfile
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/Brewfile $BREWFILE_LOC/Brewfile
+  fi
+
+  if ! [ -x "$(command -v brew)" ]; then
+    echo "Installing homebrew..."
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  fi
+
+  echo "Updating homebrew..."
+  brew update
+  echo "Upgrading brew's"
+  brew upgrade
+  echo "Upgrading brew casks"
+  brew upgrade --cask
+
+  echo "Installing other brew stuff..."
+
+  #https://github.com/Homebrew/homebrew-bundle
+  brew tap homebrew/bundle
+  brew tap homebrew/cask
+  cd ${BREWFILE_LOC} && brew bundle
+  brew tap teamookla/speedtest
+  brew install speedtest
+  brew install --cask chef/chef/inspec
+  brew install --cask dotnet
+  brew install go-task/tap/go-task
+  brew tap snyk/tap
+  brew install snyk
+  brew tap cloudflare/cloudflare
+  brew install --cask cloudflare/cloudflare/cf-terraforming
+  brew install --cask miro
+
+  cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
+
+  if [[ ! -d "/Applications/Docker.app" ]]; then
+    brew install --cask docker
+  fi
+  if [[ ! -d "/Applications/Firefox.app" ]]; then
+    brew install --cask firefox
+  fi
+  if [[ ! -d "/Applications/Google\ Chrome.app" ]]; then
+    brew install --cask google-chrome
+  fi
+  if [[ ! -d "/Applications/Postman.app" ]]; then
+    brew install --cask postman
+  fi
+  if [[ ! -d "/Applications/Slack.app" ]]; then
+    brew install --cask slack
+  fi
+  if [[ ! -d "/Applications/VirtualBox.app" ]]; then
+    brew install --cask virtualbox
+  fi
+  if [[ ! -d "/Applications/Vagrant.app" ]]; then
+    brew install --cask vagrant
+  fi
+  if [[ ! -d "/Applications/Visual\ Studio\ Code.app" ]]; then
+    brew install --cask visual-studio-code
+  fi
+  if [[ ! -d "/Applications/VLC.app" ]]; then
+    brew install --cask vlc
+  fi
+  if [[ ! -d "/Applications/zoom.us.app" ]]; then
+    brew install --cask zoom
+  fi
+
+  echo "Cleaning up brew"
+  brew cleanup
+fi
+
+
+# update is run more often to keep the device up to date with patches
+if [[ ${UPDATE} ]]; then
+  if [[ ${MACOS} || ${LINUX} ]]; then
+    echo "Updating homebrew..."
+    brew update
+    echo "Upgrading brew's"
+    brew upgrade
+    echo "Upgrading brew casks"
+    brew upgrade --cask --greedy
+    echo "Cleaning up brew"
+    brew cleanup
+    echo "Updating app store apps softwareupdate"
+    sudo -H softwareupdate --install --all --verbose
+  fi
+  if [[ ${UBUNTU} ]]; then
+    sudo -H apt update
+    sudo -H apt dist-upgrade -y
+    sudo -H apt autoremove -y
+    sudo snap refresh
+  fi
 fi
 
 exit 0
