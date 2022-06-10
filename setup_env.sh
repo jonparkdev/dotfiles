@@ -105,7 +105,7 @@ if [[ ${MACOS} ]]; then
   install_rosetta
 fi
 
-# TODO: Find out what this is for 
+# Directory to store software downloads
 if ! [[ -d ${HOME}/software_downloads ]]; then
   mkdir ${HOME}/software_downloads
 fi
