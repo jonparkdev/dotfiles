@@ -1,3 +1,17 @@
+# choose which env we are running in
+[ "$(uname -s)" = "Darwin" ] && export MACOS=1
+[ "$(uname -s)" = "Linux" ] && export LINUX=1 
+
+# for keychain ssh management
+if [[ ${MACOS} ]]; then
+    eval `/opt/homebrew/bin/keychain  --clear --eval --agents ssh --inherit any github_rsa`
+    eval `/opt/homebrew/bin/keychain  ---clear --eval --agents ssh --inherit any homelab`
+elif [[ ${LINUX} ]]; then
+    eval `/usr/bin/keychain --clear --eval --agents ssh --inherit any github_rsa`
+    eval `/usr/bin/keychain --clear --eval --agents ssh --inherit any homelab`
+fi
+
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -106,3 +120,4 @@ eval "$(starship init zsh)"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
