@@ -6,3 +6,4 @@ snapd
 zsh
 zsh-doc
 vim
+keychain
