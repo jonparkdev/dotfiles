@@ -1,0 +1,8 @@
+snapd
+snap-store
+spotify
+vlc
+zoom-client
+chromium
+bitwarden
+miro

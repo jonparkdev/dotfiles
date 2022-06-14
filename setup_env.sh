@@ -244,6 +244,9 @@ sudo npm install -g yarn
 if [[ ${UBUNTU} ]]; then
   sudo -H apt update
 
+  # snap package installation
+  xargs -a ./ubuntu_workstation_snap_packages.txt sudo snap install
+
   echo "Installing pyenv"
   curl https://pyenv.run | bash
 
@@ -354,8 +357,9 @@ if [[ ${MACOS} ]]; then
   brew cleanup
 fi
 
-
+###
 # update is run more often to keep the device up to date with patches
+###
 if [[ ${UPDATE} ]]; then
   if [[ ${MACOS} || ${LINUX} ]]; then
     echo "Updating homebrew..."
