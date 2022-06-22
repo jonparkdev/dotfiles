@@ -197,7 +197,7 @@ else
 fi
 
 echo "Linking ${DOTFILES} to their home"
-if [[ ${ MACOS } ]]; then
+if [[ ${MACOS} ]]; then
   if [[ -f ${HOME}/.gitconfig ]]; then
     rm ${HOME}/.gitconfig
     ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
@@ -236,10 +236,6 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 source .zshrc
 nvm install lts/*
 nvm alias default lts/*
-
-echo "Install yarn"
-npm install --global yarn
-sudo npm install -g yarn
 
 if [[ ${UBUNTU} ]]; then
   sudo -H apt update
@@ -309,15 +305,6 @@ if [[ ${MACOS} ]]; then
   brew tap homebrew/bundle
   brew tap homebrew/cask
   cd ${BREWFILE_LOC} && brew bundle
-  brew tap teamookla/speedtest
-  brew install speedtest
-  brew install --cask chef/chef/inspec
-  brew install --cask dotnet
-  brew install go-task/tap/go-task
-  brew tap snyk/tap
-  brew install snyk
-  brew tap cloudflare/cloudflare
-  brew install --cask cloudflare/cloudflare/cf-terraforming
   brew install --cask miro
 
   cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
