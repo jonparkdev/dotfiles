@@ -2,5 +2,5 @@
 
 
 ```
-./setup_env.sh -t OPTION
+./setup_env.sh -o OPTION
 ```
