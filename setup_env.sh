@@ -60,9 +60,9 @@ usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
 
 # Command line options
 # setup: run a full machine and developer setup
-while getopts ":ht:w" arg; do
+while getopts ":hi:w" arg; do
   case ${arg} in
-    t) 
+    o) 
       [[ ${OPTARG} = "setup" ]] && export SETUP=1
       [[ ${OPTARG} = "update" ]] && export UPDATE=1
       ;;
@@ -73,275 +73,278 @@ while getopts ":ht:w" arg; do
   esac
 done
 
-# Determine which env this script is running on 
-[[ $(uname -s) = "Darwin" ]] && export MACOS=1
-[[ $(uname -s) = "Linux" ]] && export LINUX=1
+if [[ ${SETUP} ]]; then
 
-if [[ ${LINUX} ]]; then
-  LINUX_TYPE=$(awk -F= '/^NAME/{print $2}' /etc/os-release | tr -d '"')
-  [[ ${LINUX_TYPE} = "Ubuntu" ]] && export UBUNTU=1
-fi
+  # Determine which env this script is running on 
+  [[ $(uname -s) = "Darwin" ]] && export MACOS=1
+  [[ $(uname -s) = "Linux" ]] && export LINUX=1
 
-if [[ ${UBUNTU} ]]; then
-  UBUNTU_VERSION=$(lsb_release -rs)
-  [[ ${UBUNTU_VERSION} = "18.04" ]] && export BIONIC=1
-  [[ ${UBUNTU_VERSION} = "20.04" ]] && export FOCAL=1
-  [[ ${UBUNTU_VERSION} = "22.04" ]] && export JAMMY=1
-  [[ ${UBUNTU_VERSION} = "6" ]] && export FOCAL=1 # elementary os
-fi
-
-# Set virtualenv path to variable
-if [[ ${LINUX} ]]; then
-  if [[ -f ${HOME}/.local/bin/virtualenv ]]; then
-    VIRTUALENV_LOC="${HOME}/.local/bin"
-  elif [[ -f "/usr/local/bin/virtualenv" ]]; then
-    VIRTUALENV_LOC="/usr/local/bin"
-  fi
-  VIRTUALENVWRAPPER_PYTHON="/usr/bin/python3"
-fi
-
-# Install Rosetta for new M1 silicone
-if [[ ${MACOS} ]]; then
-  echo "Installing Rosetta if necessary"
-  install_rosetta
-fi
-
-# Directory to store software downloads
-if ! [[ -d ${HOME}/software_downloads ]]; then
-  mkdir ${HOME}/software_downloads
-fi
-
-### 
-# Begin setup of base system
-###
-if [[ ${UBUNTU} ]]; then
-  if [[ ${FOCAL} ]]; then
-    sudo -H apt install --install-recommends linux-generic-hwe-20.04 -y
-  elif [[ ${JAMMY} ]]; then
-    sudo -H apt install --install-recommends linux-generic-hwe-22.04 -y
+  if [[ ${LINUX} ]]; then
+    LINUX_TYPE=$(awk -F= '/^NAME/{print $2}' /etc/os-release | tr -d '"')
+    [[ ${LINUX_TYPE} = "Ubuntu" ]] && export UBUNTU=1
   fi
 
-  xargs -a ./ubuntu_common_packages.txt sudo apt install -y
-fi
+  if [[ ${UBUNTU} ]]; then
+    UBUNTU_VERSION=$(lsb_release -rs)
+    [[ ${UBUNTU_VERSION} = "18.04" ]] && export BIONIC=1
+    [[ ${UBUNTU_VERSION} = "20.04" ]] && export FOCAL=1
+    [[ ${UBUNTU_VERSION} = "22.04" ]] && export JAMMY=1
+    [[ ${UBUNTU_VERSION} = "6" ]] && export FOCAL=1 # elementary os
+  fi
 
-# Install homebrew for Linux and Mac
-if [[ ${MACOS} || ${LINUX} ]]; then
-  if ! [ -x "$(command -v brew)" ]; then
-    echo "Installing homebrew..."
-    if [[ ${MACOS} ]]; then
-      xcode-select --install
-      # Accept Xcode license
-      sudo xcodebuild -license accept
+  # Set virtualenv path to variable
+  if [[ ${LINUX} ]]; then
+    if [[ -f ${HOME}/.local/bin/virtualenv ]]; then
+      VIRTUALENV_LOC="${HOME}/.local/bin"
+    elif [[ -f "/usr/local/bin/virtualenv" ]]; then
+      VIRTUALENV_LOC="/usr/local/bin"
     fi
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  fi
-fi
-
-echo "Installing git"
-if [[ ${MACOS} ]]; then
-  brew install git
-fi
-
-if [[ ${UBUNTU} ]]; then
-  sudo -H add-apt-repository ppa:git-core/ppa -y
-  sudo -H apt update
-  sudo -H apt dist-upgrade -y
-  sudo -H apt install git -y
-fi
-
-echo "Installing zsh"
-if [[ ${MACOS} ]]; then
-  if ! [ -x "$(command -v brew)" ]; then
-    echo "Installing homebrew..."
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-  fi
-  brew install zsh
-fi
-
-if [[ ${UBUNTU} ]]; then
-  sudo -H apt update
-  sudo -H apt install zsh -y
-  sudo -H apt install zsh-doc -y
-fi
-
-echo "Setting ZSH as shell..."
-if [[ ! ${SHELL} = "/bin/zsh" ]]; then
-  chsh -s /bin/zsh
-fi
-
-echo "Installing Oh My ZSH..."
-if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-fi
-
-# Configure system directories and link dotfiles
-echo "Creating home bin"
-if [[ ! -d ${HOME}/bin ]]; then
-  mkdir ${HOME}/bin
-fi
-
-echo "Creating ${PERSONAL_GITREPOS}"
-if [[ ! -d ${PERSONAL_GITREPOS} ]]; then
-  mkdir ${PERSONAL_GITREPOS}
-fi
-
-echo "Copying ${DOTFILES} from Github"
-if [[ ! -d ${PERSONAL_GITREPOS}/${DOTFILES} ]]; then
-  cd ${HOME} || return
-  # git clone --recursive git@github.com:jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
-  # for regular https github used on machines that will not push changes
-  git clone --recursive https://github.com/jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
-else
-  cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
-  git pull
-fi
-
-echo "Linking ${DOTFILES} to their home"
-if [[ ${MACOS} ]]; then
-  if [[ -f ${HOME}/.gitconfig ]]; then
-    rm ${HOME}/.gitconfig
-    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
-  elif [[ ! -L ${HOME}/.gitconfig ]]; then
-    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
-  fi
-fi
-
-if [[ ${LINUX} ]]; then
-  if [[ -f ${HOME}/.gitconfig ]]; then
-    rm ${HOME}/.gitconfig
-    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
-  elif [[ ! -L ${HOME}/.gitconfig ]]; then
-    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
-  fi
-fi
-
-if [[ -f ${HOME}/.zshrc ]]; then
-  rm ${HOME}/.zshrc
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
-elif [[ ! -L ${HOME}/.zshrc ]]; then
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
-fi
-
-if [[ ${MACOS} || ${LINUX} ]]; then
-  if [[ ! -d ${HOME}/.config ]]; then
-    mkdir -p ${HOME}/.config
-  fi
-fi
-
-###
-# Install packages necessary for development
-###
-echo "Install nvm for node environments and set default to lts"
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-source .zshrc
-nvm install lts/*
-nvm alias default lts/*
-
-if [[ ${UBUNTU} ]]; then
-  sudo -H apt update
-
-  # snap package installation
-  xargs -a ./ubuntu_workstation_snap_packages.txt sudo snap install
-
-  echo "Installing pyenv"
-  curl https://pyenv.run | bash
-
-  echo "Installing docker desktop"
-  curl -fsSL http://download.docker.com/linux/ubuntu/gpg | sudo -H apt-key add -
-  sudo -H add-apt-repository \
-  "deb [arch=amd64] http://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) \
-  stable"
-  sudo -H apt update
-  sudo -H apt install docker-ce -y
-  sudo -H apt install docker-ce-cli -y
-  sudo -H apt install containerd.io -y
-  # So we don't have to run as sudo
-  sudo -H groupadd docker
-  sudo usermod -aG docker ${USER}
-  newgrp docker 
-
-
-  echo "Installing docker-compose Ubuntu"
-  if [[ ! -f ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} ]]; then
-    wget -O ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} ${DOCKER_COMPOSE_URL}
-    sudo cp -a ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} /usr/local/bin/
-    sudo mv /usr/local/bin/docker-compose_${DOCKER_COMPOSE_VER} /usr/local/bin/docker-compose
-    sudo chmod 755 /usr/local/bin/docker-compose
-    sudo chown root:root /usr/local/bin/docker-compose
+    VIRTUALENVWRAPPER_PYTHON="/usr/bin/python3"
   fi
 
-  sudo -H apt autoremove -y
-fi
-
-if [[ ${MACOS} ]]; then
-  echo "Creating $BREWFILE_LOC"
-  if [[ ! -d ${BREWFILE_LOC} ]]; then
-    mkdir ${BREWFILE_LOC}
+  # Install Rosetta for new M1 silicone
+  if [[ ${MACOS} ]]; then
+    echo "Installing Rosetta if necessary"
+    install_rosetta
   fi
 
-  if [[ ! -L ${BREWFILE_LOC}/Brewfile ]]; then
-    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/Brewfile $BREWFILE_LOC/Brewfile
+  # Directory to store software downloads
+  if ! [[ -d ${HOME}/software_downloads ]]; then
+    mkdir ${HOME}/software_downloads
+  fi
+
+  ### 
+  # Begin setup of base system
+  ###
+  if [[ ${UBUNTU} ]]; then
+    if [[ ${FOCAL} ]]; then
+      sudo -H apt install --install-recommends linux-generic-hwe-20.04 -y
+    elif [[ ${JAMMY} ]]; then
+      sudo -H apt install --install-recommends linux-generic-hwe-22.04 -y
+    fi
+
+    xargs -a ./ubuntu_common_packages.txt sudo apt install -y
+  fi
+
+  # Install homebrew for Linux and Mac
+  if [[ ${MACOS} || ${LINUX} ]]; then
+    if ! [ -x "$(command -v brew)" ]; then
+      echo "Installing homebrew..."
+      if [[ ${MACOS} ]]; then
+        xcode-select --install
+        # Accept Xcode license
+        sudo xcodebuild -license accept
+      fi
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+  fi
+
+  echo "Installing git"
+  if [[ ${MACOS} ]]; then
+    brew install git
+  fi
+
+  if [[ ${UBUNTU} ]]; then
+    sudo -H add-apt-repository ppa:git-core/ppa -y
+    sudo -H apt update
+    sudo -H apt dist-upgrade -y
+    sudo -H apt install git -y
+  fi
+
+  echo "Installing zsh"
+  if [[ ${MACOS} ]]; then
+    if ! [ -x "$(command -v brew)" ]; then
+      echo "Installing homebrew..."
+      ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    fi
+    brew install zsh
+  fi
+
+  if [[ ${UBUNTU} ]]; then
+    sudo -H apt update
+    sudo -H apt install zsh -y
+    sudo -H apt install zsh-doc -y
+  fi
+
+  echo "Setting ZSH as shell..."
+  if [[ ! ${SHELL} = "/bin/zsh" ]]; then
+    chsh -s /bin/zsh
+  fi
+
+  echo "Installing Oh My ZSH..."
+  if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  fi
+
+  # Configure system directories and link dotfiles
+  echo "Creating home bin"
+  if [[ ! -d ${HOME}/bin ]]; then
+    mkdir ${HOME}/bin
+  fi
+
+  echo "Creating ${PERSONAL_GITREPOS}"
+  if [[ ! -d ${PERSONAL_GITREPOS} ]]; then
+    mkdir ${PERSONAL_GITREPOS}
+  fi
+
+  echo "Copying ${DOTFILES} from Github"
+  if [[ ! -d ${PERSONAL_GITREPOS}/${DOTFILES} ]]; then
+    cd ${HOME} || return
+    # git clone --recursive git@github.com:jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
+    # for regular https github used on machines that will not push changes
+    git clone --recursive https://github.com/jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
   else
-    rm $BREWFILE_LOC/Brewfile
-    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/Brewfile $BREWFILE_LOC/Brewfile
+    cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
+    git pull
   fi
 
-  if ! [ -x "$(command -v brew)" ]; then
-    echo "Installing homebrew..."
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  echo "Linking ${DOTFILES} to their home"
+  if [[ ${MACOS} ]]; then
+    if [[ -f ${HOME}/.gitconfig ]]; then
+      rm ${HOME}/.gitconfig
+      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
+    elif [[ ! -L ${HOME}/.gitconfig ]]; then
+      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
+    fi
   fi
 
-  echo "Updating homebrew..."
-  brew update
-  echo "Upgrading brew's"
-  brew upgrade
-  echo "Upgrading brew casks"
-  brew upgrade --cask
-
-  echo "Installing other brew stuff..."
-
-  #https://github.com/Homebrew/homebrew-bundle
-  brew tap homebrew/bundle
-  brew tap homebrew/cask
-  cd ${BREWFILE_LOC} && brew bundle
-  brew install --cask miro
-
-  cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
-
-  if [[ ! -d "/Applications/Docker.app" ]]; then
-    brew install --cask docker
-  fi
-  if [[ ! -d "/Applications/Firefox.app" ]]; then
-    brew install --cask firefox
-  fi
-  if [[ ! -d "/Applications/Google\ Chrome.app" ]]; then
-    brew install --cask google-chrome
-  fi
-  if [[ ! -d "/Applications/Postman.app" ]]; then
-    brew install --cask postman
-  fi
-  if [[ ! -d "/Applications/Slack.app" ]]; then
-    brew install --cask slack
-  fi
-  if [[ ! -d "/Applications/VirtualBox.app" ]]; then
-    brew install --cask virtualbox
-  fi
-  if [[ ! -d "/Applications/Vagrant.app" ]]; then
-    brew install --cask vagrant
-  fi
-  if [[ ! -d "/Applications/Visual\ Studio\ Code.app" ]]; then
-    brew install --cask visual-studio-code
-  fi
-  if [[ ! -d "/Applications/VLC.app" ]]; then
-    brew install --cask vlc
-  fi
-  if [[ ! -d "/Applications/zoom.us.app" ]]; then
-    brew install --cask zoom
+  if [[ ${LINUX} ]]; then
+    if [[ -f ${HOME}/.gitconfig ]]; then
+      rm ${HOME}/.gitconfig
+      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
+    elif [[ ! -L ${HOME}/.gitconfig ]]; then
+      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
+    fi
   fi
 
-  echo "Cleaning up brew"
-  brew cleanup
+  if [[ -f ${HOME}/.zshrc ]]; then
+    rm ${HOME}/.zshrc
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
+  elif [[ ! -L ${HOME}/.zshrc ]]; then
+    ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
+  fi
+
+  if [[ ${MACOS} || ${LINUX} ]]; then
+    if [[ ! -d ${HOME}/.config ]]; then
+      mkdir -p ${HOME}/.config
+    fi
+  fi
+
+  ###
+  # Install packages necessary for development
+  ###
+  echo "Install nvm for node environments and set default to lts"
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+  source .zshrc
+  nvm install lts/*
+  nvm alias default lts/*
+
+  if [[ ${UBUNTU} ]]; then
+    sudo -H apt update
+
+    # snap package installation
+    xargs -a ./ubuntu_workstation_snap_packages.txt sudo snap install
+
+    echo "Installing pyenv"
+    curl https://pyenv.run | bash
+
+    echo "Installing docker desktop"
+    curl -fsSL http://download.docker.com/linux/ubuntu/gpg | sudo -H apt-key add -
+    sudo -H add-apt-repository \
+    "deb [arch=amd64] http://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) \
+    stable"
+    sudo -H apt update
+    sudo -H apt install docker-ce -y
+    sudo -H apt install docker-ce-cli -y
+    sudo -H apt install containerd.io -y
+    # So we don't have to run as sudo
+    sudo -H groupadd docker
+    sudo usermod -aG docker ${USER}
+    newgrp docker 
+
+
+    echo "Installing docker-compose Ubuntu"
+    if [[ ! -f ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} ]]; then
+      wget -O ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} ${DOCKER_COMPOSE_URL}
+      sudo cp -a ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} /usr/local/bin/
+      sudo mv /usr/local/bin/docker-compose_${DOCKER_COMPOSE_VER} /usr/local/bin/docker-compose
+      sudo chmod 755 /usr/local/bin/docker-compose
+      sudo chown root:root /usr/local/bin/docker-compose
+    fi
+
+    sudo -H apt autoremove -y
+  fi
+
+  if [[ ${MACOS} ]]; then
+    echo "Creating $BREWFILE_LOC"
+    if [[ ! -d ${BREWFILE_LOC} ]]; then
+      mkdir ${BREWFILE_LOC}
+    fi
+
+    if [[ ! -L ${BREWFILE_LOC}/Brewfile ]]; then
+      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/Brewfile $BREWFILE_LOC/Brewfile
+    else
+      rm $BREWFILE_LOC/Brewfile
+      ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/Brewfile $BREWFILE_LOC/Brewfile
+    fi
+
+    if ! [ -x "$(command -v brew)" ]; then
+      echo "Installing homebrew..."
+      ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    fi
+
+    echo "Updating homebrew..."
+    brew update
+    echo "Upgrading brew's"
+    brew upgrade
+    echo "Upgrading brew casks"
+    brew upgrade --cask
+
+    echo "Installing other brew stuff..."
+
+    #https://github.com/Homebrew/homebrew-bundle
+    brew tap homebrew/bundle
+    brew tap homebrew/cask
+    cd ${BREWFILE_LOC} && brew bundle
+    brew install --cask miro
+
+    cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
+
+    if [[ ! -d "/Applications/Docker.app" ]]; then
+      brew install --cask docker
+    fi
+    if [[ ! -d "/Applications/Firefox.app" ]]; then
+      brew install --cask firefox
+    fi
+    if [[ ! -d "/Applications/Google\ Chrome.app" ]]; then
+      brew install --cask google-chrome
+    fi
+    if [[ ! -d "/Applications/Postman.app" ]]; then
+      brew install --cask postman
+    fi
+    if [[ ! -d "/Applications/Slack.app" ]]; then
+      brew install --cask slack
+    fi
+    if [[ ! -d "/Applications/VirtualBox.app" ]]; then
+      brew install --cask virtualbox
+    fi
+    if [[ ! -d "/Applications/Vagrant.app" ]]; then
+      brew install --cask vagrant
+    fi
+    if [[ ! -d "/Applications/Visual\ Studio\ Code.app" ]]; then
+      brew install --cask visual-studio-code
+    fi
+    if [[ ! -d "/Applications/VLC.app" ]]; then
+      brew install --cask vlc
+    fi
+    if [[ ! -d "/Applications/zoom.us.app" ]]; then
+      brew install --cask zoom
+    fi
+
+    echo "Cleaning up brew"
+    brew cleanup
+  fi
 fi
 
 ###
