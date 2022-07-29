@@ -131,10 +131,3 @@ export NVM_DIR="$HOME/.nvm"
 
 export NPM_USER="1aLAZxbF"
 export NPM_PASS="-FQqBlD4jiqt6Rjacc6GI6MzuA8uQr1Bzarsugap9Kqy"
-
-# Add certs
-export NODE_EXTRA_CA_CERTS=/usr/local/certs/nscacerts.pem
-
-# bit
-export PATH="$PATH:/Users/jonpark/bin"
-# bit end
