@@ -60,13 +60,13 @@ usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
 
 # Command line options
 # setup: run a full machine and developer setup
-while getopts ":hi:w" arg; do
+while getopts ":ho:w" arg; do
   case ${arg} in
     o) 
       [[ ${OPTARG} = "setup" ]] && export SETUP=1
       [[ ${OPTARG} = "update" ]] && export UPDATE=1
       ;;
-    h | *) # display help
+    h) # display help
       usage
       exit 0
       ;;
@@ -287,11 +287,6 @@ if [[ ${SETUP} ]]; then
     else
       rm $BREWFILE_LOC/Brewfile
       ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/Brewfile $BREWFILE_LOC/Brewfile
-    fi
-
-    if ! [ -x "$(command -v brew)" ]; then
-      echo "Installing homebrew..."
-      ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     fi
 
     echo "Updating homebrew..."
