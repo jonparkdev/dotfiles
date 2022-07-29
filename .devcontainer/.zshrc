@@ -7,8 +7,8 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # for keychain ssh management
 if [[ ${MACOS} ]]; then
-    eval `/opt/homebrew/bin/keychain  --clear --eval --agents ssh --inherit any github_rsa`
-    eval `/opt/homebrew/bin/keychain  ---clear --eval --agents ssh --inherit any homelab`
+    eval `/opt/homebrew/bin/keychain --eval --agents ssh --inherit any github_rsa`
+    eval `/opt/homebrew/bin/keychain --eval --agents ssh --inherit any homelab`
 elif [[ ${LINUX} ]]; then
     eval `/usr/bin/keychain --clear --eval --agents ssh --inherit any github_rsa`
     eval `/usr/bin/keychain --clear --eval --agents ssh --inherit any homelab`
@@ -127,4 +127,14 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
+# Add NPM variables
 
+export NPM_USER="1aLAZxbF"
+export NPM_PASS="-FQqBlD4jiqt6Rjacc6GI6MzuA8uQr1Bzarsugap9Kqy"
+
+# Add certs
+export NODE_EXTRA_CA_CERTS=/usr/local/certs/nscacerts.pem
+
+# bit
+export PATH="$PATH:/Users/jonpark/bin"
+# bit end
