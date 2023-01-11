@@ -13,7 +13,7 @@ help() {
   echo "Syntax: ./main.sh [option]"
   echo
   echo "options:"
-  echo "    -o   Select from the following options: `setup` or `update`"
+  echo "    -o   Select from the following options: 'setup' or 'update'"
   exit 0;
 }
 
