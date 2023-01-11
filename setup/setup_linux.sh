@@ -50,33 +50,16 @@ if [[ ! ${SHELL} = "/bin/zsh" ]]; then
   chsh -s /bin/zsh
 fi
 
-echo "Installing Oh My ZSH..."
-if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-fi
-
 ###
 # dotfile configuration
 ###
 echo "Linking ${DOTFILES} to their home"
+
+echo ".gitconfig link"
 if [[ -f ${HOME}/.gitconfig ]]; then
   rm ${HOME}/.gitconfig
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
 elif [[ ! -L ${HOME}/.gitconfig ]]; then
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
 fi
-
-echo "starship profile"
-if [[ ! -d ${HOME}/.config ]]; then
-  mkdir -p ${HOME}/.config
-fi
-
-if [[ -f ${HOME}/.config/starship.toml ]]; then
-  rm ${HOME}/.config/starship.toml
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.config/starship.toml ${HOME}/.config/starship.toml
-elif [[ ! -L ${HOME}/.config/starship.toml ]]; then
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.config/starship.toml ${HOME}/.config/starship.toml
-fi
-
-
 

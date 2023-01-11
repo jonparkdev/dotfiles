@@ -30,25 +30,14 @@ fi
 # dotfile configuration
 ###
 echo "Linking ${DOTFILES} to their home"
+
+
+echo ".gitconfig link"
 if [[ -f ${HOME}/.gitconfig ]]; then
   rm ${HOME}/.gitconfig
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
 elif [[ ! -L ${HOME}/.gitconfig ]]; then
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
-fi
-
-if [[ -f ${HOME}/.zshrc ]]; then
-  rm ${HOME}/.zshrc
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
-elif [[ ! -L ${HOME}/.zshrc ]]; then
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
-fi
-
-if [[ -d ${HOME}/.zsh ]]; then
-  rm -rf ${HOME}/.zsh
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zsh/ ${HOME}/.zsh
-elif [[ ! -L ${HOME}/.zsh ]]; then
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zsh/ ${HOME}/.zsh
 fi
 
 echo "Creating $BREWFILE_LOC"
@@ -63,17 +52,6 @@ else
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/Brewfile $BREWFILE_LOC/Brewfile
 fi
 
-if [[ ! -d ${HOME}/.config ]]; then
-  mkdir -p ${HOME}/.config
-fi
-
-echo "starship profile"
-if [[ -f ${HOME}/.config/starship.toml ]]; then
-  rm ${HOME}/.config/starship.toml
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/starship.toml ${HOME}/.config/starship.toml
-elif [[ ! -L ${HOME}/.config/starship.toml ]]; then
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/starship.toml ${HOME}/.config/starship.toml
-fi
 
 ###
 # Install packages using Homebrew
