@@ -1,3 +1,7 @@
+# Choose which env we are running in
+[ "$(uname -s)" = "Darwin" ] && export MACOS=1
+[ "$(uname -s)" = "Linux" ] && export LINUX=1 
+
 [[ -f ~/.zsh/aliases.zsh ]] && source ~/.zsh/aliases.zsh
 [[ -f ~/.zsh/functions.zsh ]] && source ~/.zsh/functions.zsh
 [[ -f ~/.zsh/homebrew.zsh ]] && source ~/.zsh/homebrew.zsh
