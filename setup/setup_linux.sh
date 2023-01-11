@@ -33,21 +33,13 @@ if [[ ${UBUNTU} ]]; then
   curl https://pyenv.run | bash
 
   echo "Installing docker desktop"
-  curl -fsSL https://get.docker.com -o get-docker.sh
-  sh get-docker.sh
-  # So we don't have to run as sudo
-  sudo -H groupadd docker
-  sudo usermod -aG docker ${USER}
-  newgrp docker 
-
-
-  echo "Installing docker-compose Ubuntu"
-  if [[ ! -f ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} ]]; then
-    wget -O ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} ${DOCKER_COMPOSE_URL}
-    sudo cp -a ${HOME}/software_downloads/docker-compose_${DOCKER_COMPOSE_VER} /usr/local/bin/
-    sudo mv /usr/local/bin/docker-compose_${DOCKER_COMPOSE_VER} /usr/local/bin/docker-compose
-    sudo chmod 755 /usr/local/bin/docker-compose
-    sudo chown root:root /usr/local/bin/docker-compose
+  if [ ! -x "$(command -v docker)" ]; then
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
+    # So we don't have to run as sudo
+    sudo -H groupadd docker
+    sudo usermod -aG docker ${USER}
+    newgrp docker
   fi
 
   sudo -H apt autoremove -y
