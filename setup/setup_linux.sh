@@ -85,6 +85,13 @@ else
 fi
 
 echo "ZSH configuration"
+if [[ -f ${HOME}/.zshenv ]]; then
+  rm ${HOME}/.zshenv
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshenv ${HOME}/.zshenv
+elif [[ ! -L ${HOME}/.zshrc ]]; then
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshenv ${HOME}/.zshenv
+fi
+
 if [[ -f ${HOME}/.zshrc ]]; then
   rm ${HOME}/.zshrc
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
