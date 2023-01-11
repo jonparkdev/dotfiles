@@ -1,24 +1,5 @@
 #!/usr/bin/bash
 
-# Install homebrew for both MAC and Linux
-if ! [ -x "$(command -v brew)" ]; then
-  echo "Installing homebrew..."
-  if [[ ${MACOS} ]]; then
-    xcode-select --install
-    # Accept Xcode license
-    sudo xcodebuild -license accept
-  fi
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  source .zshrc
-fi
-
-# Install NPM
-echo "Install nvm for node environments and set default to lts"
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-source .zshrc
-nvm install lts/*
-nvm alias default lts/*
-
 ###
 # Configure system directories and link dotfiles
 ###
@@ -69,6 +50,25 @@ if [[ -d ${HOME}/.zsh ]]; then
 elif [[ ! -L ${HOME}/.zsh ]]; then
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zsh/ ${HOME}/.zsh
 fi
+
+# Install homebrew for both MAC and Linux
+if ! [ -x "$(command -v brew)" ]; then
+  echo "Installing homebrew..."
+  if [[ ${MACOS} ]]; then
+    xcode-select --install
+    # Accept Xcode license
+    sudo xcodebuild -license accept
+  fi
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  source .zshrc
+fi
+
+# Install NPM
+echo "Install nvm for node environments and set default to lts"
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+source .zshrc
+nvm install lts/*
+nvm alias default lts/*
 
 
 

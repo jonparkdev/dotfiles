@@ -29,8 +29,7 @@ fi
 ###
 # dotfile configuration
 ###
-echo "Linking ${DOTFILES} to their home"
-
+echo "Linking ${DOTFILES} to their home directory"
 
 echo ".gitconfig link"
 if [[ -f ${HOME}/.gitconfig ]]; then
