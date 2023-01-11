@@ -25,6 +25,7 @@ while getopts ":ho:w" arg; do
   case ${arg} in
     o) 
       [[ ${OPTARG} = "setup" ]] && export SETUP=1
+      [[ ${OPTARG} = "workstation" ]] && export SETUP=1 && export WORKSTATION=1
       [[ ${OPTARG} = "update" ]] && export UPDATE=1
       ;;
     h) 

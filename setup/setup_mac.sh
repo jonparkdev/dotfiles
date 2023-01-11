@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 
-### REQUIRED for setup ###
-. "$DIR/setup_general.sh"
-
-###
-# Install necessary packages for configuration
-###
 # Install Rosetta for new M1 silicone
 echo "Installing Rosetta if necessary"
 install_rosetta
+
+# Install homebrew for MAC
+if ! [ -x "$(command -v brew)" ]; then
+  echo "Installing homebrew..."
+  xcode-select --install
+  # Accept Xcode license
+  sudo xcodebuild -license accept
+fi
 
 echo "Installing git"
 brew install git
@@ -21,17 +23,57 @@ if [[ ! ${SHELL} = "/bin/zsh" ]]; then
   chsh -s /bin/zsh
 fi
 
-echo "Installing Oh My ZSH..."
-if [[ ! -d ${HOME}/.oh-my-zsh ]]; then
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+echo "Install nvm for node environments and set default to lts"
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+
+###
+# Link dotfiles to home directory
+###
+
+echo "Creating ${PERSONAL_GITREPOS}"
+if [[ ! -d ${PERSONAL_GITREPOS} ]]; then
+  mkdir ${PERSONAL_GITREPOS}
 fi
 
-###
-# dotfile configuration
-###
-echo "Linking ${DOTFILES} to their home directory"
+echo "Copying ${DOTFILES} from Github"
+if [[ ! -d ${PERSONAL_GITREPOS}/${DOTFILES} ]]; then
+  cd ${HOME} || return
+  # git clone --recursive git@github.com:jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
+  # for regular https github used on machines that will not push changes
+  git clone --recursive https://github.com/jonparkdev/${DOTFILES}.git ${PERSONAL_GITREPOS}/${DOTFILES}
+else
+  cd ${PERSONAL_GITREPOS}/${DOTFILES} || return
+  git pull
+fi
 
-echo ".gitconfig link"
+echo "ZSH configuration"
+if [[ -f ${HOME}/.zshrc ]]; then
+  rm ${HOME}/.zshrc
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
+elif [[ ! -L ${HOME}/.zshrc ]]; then
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
+fi
+
+if [[ -d ${HOME}/.zsh ]]; then
+  rm -rf ${HOME}/.zsh
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zsh/ ${HOME}/.zsh
+elif [[ ! -L ${HOME}/.zsh ]]; then
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zsh/ ${HOME}/.zsh
+fi
+
+echo "starship profile"
+if [[ ! -d ${HOME}/.config ]]; then
+  mkdir -p ${HOME}/.config
+fi
+
+if [[ -f ${HOME}/.config/starship.toml ]]; then
+  rm ${HOME}/.config/starship.toml
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.config/starship.toml ${HOME}/.config/starship.toml
+elif [[ ! -L ${HOME}/.config/starship.toml ]]; then
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.config/starship.toml ${HOME}/.config/starship.toml
+fi
+
+echo ".gitconfig"
 if [[ -f ${HOME}/.gitconfig ]]; then
   rm ${HOME}/.gitconfig
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_mac ${HOME}/.gitconfig
@@ -50,7 +92,6 @@ else
   rm $BREWFILE_LOC/Brewfile
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/Brewfile $BREWFILE_LOC/Brewfile
 fi
-
 
 ###
 # Install packages using Homebrew
