@@ -6,9 +6,17 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 . "$DIR/functions.sh"
 . "$DIR/config.sh"
 
-# function be called if incorrect use of STDIN
-usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
-[[ $# -eq 0 ]] && usage
+# Display CLI help.
+help() {
+  echo "This script provides options to setup configuration for a Ubuntu or Mac Machine"
+  echo 
+  echo "Syntax: ./main.sh [option]"
+  echo
+  echo "options:"
+  echo "    -o   Select from the following options: `setup` or `update`"
+}
+
+[[ $# -eq 0 ]] && help
 
 # Command line options
 # setup: run a full machine and developer setup
@@ -20,8 +28,12 @@ while getopts ":ho:w" arg; do
       ;;
     h) 
       # display help
-      usage
+      help
       exit 0
+      ;;
+    \?) 
+      echo "Error: Invalid Option"
+      exit 1
       ;;
   esac
 done
