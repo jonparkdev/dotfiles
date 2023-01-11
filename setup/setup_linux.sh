@@ -30,7 +30,6 @@ if [[ ${UBUNTU} ]]; then
     chsh -s /bin/zsh
   fi
 
-
   sudo -H apt update
 
   echo "Installing docker desktop"
@@ -48,7 +47,11 @@ if [[ ${UBUNTU} ]]; then
 
   # Install NPM
   echo "Install nvm for node environments and set default to lts"
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+  export NVM_DIR="$HOME/.nvm" && (
+    git clone https://github.com/nvm-sh/nvm.git "$NVM_DIR"
+    cd "$NVM_DIR"
+    git checkout `git describe --abbrev=0 --tags --match "v[0-9]*" $(git rev-list --tags --max-count=1)`
+  ) && \. "$NVM_DIR/nvm.sh"
 
   sudo -H apt autoremove -y
 
