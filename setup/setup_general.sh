@@ -22,11 +22,6 @@ nvm alias default lts/*
 ###
 # Configure system directories and link dotfiles
 ###
-echo "Creating home bin"
-if [[ ! -d ${HOME}/bin ]]; then
-  mkdir ${HOME}/bin
-fi
-
 echo "Creating Directory to store software downloads"
 if ! [[ -d ${HOME}/software_downloads ]]; then
   mkdir ${HOME}/software_downloads

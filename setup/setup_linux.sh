@@ -66,15 +66,11 @@ elif [[ ! -L ${HOME}/.gitconfig ]]; then
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.gitconfig_linux ${HOME}/.gitconfig
 fi
 
-if [[ -f ${HOME}/.zshrc ]]; then
-  rm ${HOME}/.zshrc
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
-elif [[ ! -L ${HOME}/.zshrc ]]; then
-  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
+echo "starship profile"
+if [[ ! -d ${HOME}/.config ]]; then
+  mkdir -p ${HOME}/.config
 fi
 
-
-echo "starship profile"
 if [[ -f ${HOME}/.config/starship.toml ]]; then
   rm ${HOME}/.config/starship.toml
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.config/starship.toml ${HOME}/.config/starship.toml
