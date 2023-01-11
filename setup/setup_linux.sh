@@ -33,15 +33,8 @@ if [[ ${UBUNTU} ]]; then
   curl https://pyenv.run | bash
 
   echo "Installing docker desktop"
-  curl -fsSL http://download.docker.com/linux/ubuntu/gpg | sudo -H apt-key add -
-  sudo -H add-apt-repository \
-  "deb [arch=amd64] http://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) \
-  stable"
-  sudo -H apt update
-  sudo -H apt install docker-ce -y
-  sudo -H apt install docker-ce-cli -y
-  sudo -H apt install containerd.io -y
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  sh get-docker.sh
   # So we don't have to run as sudo
   sudo -H groupadd docker
   sudo usermod -aG docker ${USER}
