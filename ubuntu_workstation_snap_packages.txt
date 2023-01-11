@@ -6,3 +6,5 @@ zoom-client
 chromium
 bitwarden
 miro
+starship
+

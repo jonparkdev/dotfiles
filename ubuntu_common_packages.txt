@@ -7,3 +7,4 @@ zsh
 zsh-doc
 vim
 keychain
+direnv
