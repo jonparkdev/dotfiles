@@ -1,6 +1,5 @@
 # To Run 
 
-
 ```
-./setup_env.sh -o OPTION
+./setup/setup.sh -o OPTION
 ```

@@ -6,7 +6,6 @@
 ###
 # Install necessary packages for configuration
 ###
-
 # Install Rosetta for new M1 silicone
 echo "Installing Rosetta if necessary"
 install_rosetta
@@ -45,6 +44,13 @@ elif [[ ! -L ${HOME}/.zshrc ]]; then
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
 fi
 
+if [[ -d ${HOME}/.zsh ]]; then
+  rm -rf ${HOME}/.zsh
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zsh/ ${HOME}/.zsh
+elif [[ ! -L ${HOME}/.zsh ]]; then
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zsh/ ${HOME}/.zsh
+fi
+
 echo "Creating $BREWFILE_LOC"
 if [[ ! -d ${BREWFILE_LOC} ]]; then
   mkdir ${BREWFILE_LOC}
@@ -61,6 +67,13 @@ if [[ ! -d ${HOME}/.config ]]; then
   mkdir -p ${HOME}/.config
 fi
 
+echo "starship profile"
+if [[ -f ${HOME}/.config/starship.toml ]]; then
+  rm ${HOME}/.config/starship.toml
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/starship.toml ${HOME}/.config/starship.toml
+elif [[ ! -L ${HOME}/.config/starship.toml ]]; then
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/starship.toml ${HOME}/.config/starship.toml
+fi
 
 ###
 # Install packages using Homebrew

@@ -73,7 +73,6 @@ fi
 ###
 # dotfile configuration
 ###
-
 echo "Linking ${DOTFILES} to their home"
 if [[ -f ${HOME}/.gitconfig ]]; then
   rm ${HOME}/.gitconfig
@@ -89,8 +88,14 @@ elif [[ ! -L ${HOME}/.zshrc ]]; then
   ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.zshrc ${HOME}/.zshrc
 fi
 
-if [[ ! -d ${HOME}/.config ]]; then
-  mkdir -p ${HOME}/.config
+
+echo "starship profile"
+if [[ -f ${HOME}/.config/starship.toml ]]; then
+  rm ${HOME}/.config/starship.toml
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.config/starship.toml ${HOME}/.config/starship.toml
+elif [[ ! -L ${HOME}/.config/starship.toml ]]; then
+  ln -s ${PERSONAL_GITREPOS}/${DOTFILES}/.config/starship.toml ${HOME}/.config/starship.toml
 fi
+
 
 
