@@ -14,6 +14,7 @@ help() {
   echo
   echo "options:"
   echo "    -o   Select from the following options: `setup` or `update`"
+  exit 0;
 }
 
 [[ $# -eq 0 ]] && help
