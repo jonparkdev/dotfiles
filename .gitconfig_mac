@@ -1,5 +1,5 @@
 [core]
-        excludesfile = /Users/jon/.gitignore_global
+        excludesfile = /Users/jonpark/.gitignore_global
 [user]
         name = Jon Park
         email = jon@jonathanpark.ca
