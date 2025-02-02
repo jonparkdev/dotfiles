@@ -4,6 +4,7 @@ _:
   # Development Tools
   "homebrew/cask/docker"
   "visual-studio-code"
+  "ghostty"
 
   # Communication Tools
   "notion"
@@ -19,6 +20,7 @@ _:
 
   # Productivity Tools
   "ticktick"
+  "obsidian"
 
   # Browsers
   "firefox"

@@ -58,4 +58,7 @@ with pkgs; [
   # Python packages
   python3
   virtualenv
+
+  # Rust packages
+  cargo
 ]
