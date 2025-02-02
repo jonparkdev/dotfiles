@@ -1,5 +1,3 @@
-# To Run 
+# Nix Declarative Setup
 
-```
-./setup/setup.sh -o OPTION
-```
+
