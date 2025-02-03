@@ -1,7 +1,7 @@
 { config, pkgs, lib, home-manager, ... }:
 
 let
-  user = "jon";
+  user = "jonpark";
   # Define the content of your file as a derivation
   myEmacsLauncher = pkgs.writeScript "emacs-launcher.command" ''
     #!/bin/sh
@@ -41,7 +41,6 @@ in
 
     masApps = {
       "1password" = 1333542190;
-      "wireguard" = 1451685025;
     };
   };
 
@@ -73,25 +72,10 @@ in
     dock = {
       enable = true;
       entries = [
+        { path = "/Applications/Launchpad.app/"; }
         { path = "/Applications/Slack.app/"; }
-        { path = "/System/Applications/Messages.app/"; }
-        { path = "/System/Applications/Facetime.app/"; }
-        { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
-        { path = "/System/Applications/Music.app/"; }
-        { path = "/System/Applications/News.app/"; }
-        { path = "/System/Applications/Photos.app/"; }
-        { path = "/System/Applications/Photo Booth.app/"; }
-        { path = "/System/Applications/TV.app/"; }
-        { path = "/System/Applications/Home.app/"; }
-        {
-          path = toString myEmacsLauncher;
-          section = "others";
-        }
-        {
-          path = "${config.users.users.${user}.home}/.local/share/";
-          section = "others";
-          options = "--sort name --view grid --display folder";
-        }
+        { path = "/Applications/Ghostty.app/"; }
+        { path = "/Applications/Firefox.app/"; }
         {
           path = "${config.users.users.${user}.home}/.local/share/downloads";
           section = "others";

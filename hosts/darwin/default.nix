@@ -1,6 +1,6 @@
 { agenix, config, pkgs, ... }:
 
-let user = "jon"; in
+let user = "jonpark"; in
 
 {
 
@@ -80,7 +80,7 @@ let user = "jon"; in
         show-recents = false;
         launchanim = true;
         orientation = "bottom";
-        tilesize = 48;
+        tilesize = 64;
       };
 
       finder = {

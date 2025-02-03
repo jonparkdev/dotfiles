@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let name = "Jon Park";
-    user = "jon";
+    user = "jonpark";
     email = "accounts@jonpark.dev"; in
 {
   # Shared shell configuration
@@ -78,7 +78,7 @@ let name = "Jon Park";
 	    editor = "vim";
         autocrlf = "input";
       };
-      commit.gpgsign = true;
+      commit.gpgsign = false;
       pull.rebase = true;
       rebase.autoStash = true;
     };
