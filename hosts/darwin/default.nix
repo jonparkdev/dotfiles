@@ -72,6 +72,7 @@ let user = "jonpark"; in
 
       finder = {
         _FXShowPosixPathInTitle = false;
+        NewWindowTarget = "Home";
       };
 
       trackpad = {
