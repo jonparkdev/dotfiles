@@ -68,9 +68,11 @@ in
       enable = true;
       entries = [
         { path = "/Applications/Launchpad.app/"; }
-        { path = "/Applications/Slack.app/"; }
         { path = "/Applications/Ghostty.app/"; }
+        { path = "/Applications/Obsidian.app/"; }
         { path = "/Applications/Firefox.app/"; }
+        { path = "/Applications/Slack.app/"; }
+        { path = "/Applications/Notion.app/"; }
         {
           path = "${config.users.users.${user}.home}/.local/share/downloads";
           section = "others";
