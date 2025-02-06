@@ -170,8 +170,6 @@ let user = "jonpark";
         opacity-rule = [
           "100:class_g = 'i3lock'"
           "60:class_g = 'Dunst'"
-          "100:class_g = 'Alacritty' && focused"
-          "90:class_g = 'Alacritty' && !focused"
         ];
 
         blur-kern = "3x3box";
