@@ -72,13 +72,17 @@ let name = "Jon Park";
     lfs = {
       enable = true;
     };
+    signing = {
+      key = "AAA10B6E73B2FEBDF053315B1132B7CE06AE15A7"; 
+      signByDefault = true;
+    };
     extraConfig = {
       init.defaultBranch = "main";
       core = {
-	    editor = "vim";
+	      editor = "vim";
         autocrlf = "input";
       };
-      commit.gpgsign = false;
+      commit.gpgsign = true;
       pull.rebase = true;
       rebase.autoStash = true;
     };
