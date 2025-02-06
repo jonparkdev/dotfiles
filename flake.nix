@@ -83,6 +83,10 @@
           inherit system;
           specialArgs = inputs;
           modules = [
+            # See issue: https://github.com/zhaofengli/nix-homebrew/issues/5#issuecomment-2412587886
+            ({ config, ... }: {                                                        
+                homebrew.taps = builtins.attrNames config.nix-homebrew.taps;              
+            })   
             home-manager.darwinModules.home-manager
             nix-homebrew.darwinModules.nix-homebrew
             {

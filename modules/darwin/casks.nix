@@ -12,7 +12,6 @@ _:
   "zoom"
 
   # Utility Tools
-  "syncthing"
   "mullvadvpn"
 
   # Entertainment Tools
