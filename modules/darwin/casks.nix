@@ -20,6 +20,7 @@ _:
   # Productivity Tools
   "ticktick"
   "obsidian"
+  "claude"
 
   # Browsers
   "firefox"

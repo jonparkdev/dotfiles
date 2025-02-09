@@ -71,6 +71,7 @@ in
         { path = "/Applications/Ghostty.app/"; }
         { path = "/Applications/Obsidian.app/"; }
         { path = "/Applications/Firefox.app/"; }
+        { path = "/Applications/Claude.app/"; }
         { path = "/Applications/Slack.app/"; }
         { path = "/Applications/Notion.app/"; }
         {
