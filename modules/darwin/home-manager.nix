@@ -74,8 +74,9 @@ in
         { path = "/Applications/Claude.app/"; }
         { path = "/Applications/Slack.app/"; }
         { path = "/Applications/Notion.app/"; }
+        { path = "/Applications/1password.app/"; }
         {
-          path = "${config.users.users.${user}.home}/.local/share/downloads";
+          path = "${config.users.users.${user}.home}/Downloads";
           section = "others";
           options = "--sort name --view grid --display stack";
         }

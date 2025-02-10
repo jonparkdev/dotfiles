@@ -13,6 +13,7 @@ _:
 
   # Utility Tools
   "mullvadvpn"
+  "1password"
 
   # Entertainment Tools
   "vlc"
