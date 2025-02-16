@@ -69,11 +69,12 @@ in
       entries = [
         { path = "/Applications/Launchpad.app/"; }
         { path = "/Applications/Ghostty.app/"; }
-        { path = "/Applications/Obsidian.app/"; }
         { path = "/Applications/Firefox.app/"; }
+        { path = "/Applications/Obsidian.app/"; }
         { path = "/Applications/Claude.app/"; }
         { path = "/Applications/Slack.app/"; }
         { path = "/Applications/Notion.app/"; }
+        { path = "/Applications/TickTick.app/"; }
         { path = "/Applications/1password.app/"; }
         {
           path = "${config.users.users.${user}.home}/Downloads";
